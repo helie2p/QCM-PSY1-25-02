@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QCM – Histoire de la philosophie moderne</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Georgia', serif;
+      background: #f5f0e8;
+      color: #2c2c2c;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+    header { text-align: center; margin-bottom: 2rem; }
+    header h1 { font-size: 1.6rem; color: #3b2a1a; margin-bottom: 0.3rem; }
+    header p { color: #7a6a55; font-style: italic; font-size: 0.9rem; }
+
+    .progress-wrap { width: 100%; max-width: 660px; margin-bottom: 1.5rem; }
+    .progress-info { display: flex; justify-content: space-between; font-size: 0.82rem; color: #7a6a55; margin-bottom: 0.4rem; }
+    .progress-bar-bg { background: #ddd5c4; border-radius: 8px; height: 8px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; background: #8b5e3c; border-radius: 8px; transition: width 0.5s ease; }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.09);
+      padding: 2rem 2.2rem;
+      max-width: 660px;
+      width: 100%;
+      animation: fadeIn 0.35s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Citation block (shown after answer) */
+    .citation-block {
+      background: #faf6f0;
+      border-left: 4px solid #c8a882;
+      border-radius: 0 6px 6px 0;
+      padding: 0.9rem 1.1rem;
+      margin-top: 0.9rem;
+      font-size: 0.86rem;
+      line-height: 1.7;
+      color: #3b2a1a;
+    }
+    .citation-block .citation-ref {
+      font-size: 0.74rem;
+      color: #8b6a4a;
+      margin-bottom: 0.4rem;
+      font-style: italic;
+    }
+    .citation-block .citation-text { font-style: italic; }
+    .citation-label {
+      font-size: 0.75rem;
+      font-family: sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #a07040;
+      margin-bottom: 0.35rem;
+    }
+
+    .theme-tag {
+      display: inline-block;
+      background: #f0e6d6;
+      color: #8b5e3c;
+      font-size: 0.72rem;
+      letter-spacing: 0.05em;
+      padding: 0.2rem 0.7rem;
+      border-radius: 20px;
+      margin-bottom: 1rem;
+      margin-top: 0;
+      font-family: sans-serif;
+    }
+    .question-text {
+      font-size: 1rem;
+      font-weight: bold;
+      line-height: 1.6;
+      margin-bottom: 0.6rem;
+      color: #2c2c2c;
+    }
+    .options { display: flex; flex-direction: column; gap: 0.55rem; }
+    .option-btn {
+      background: #faf6f0;
+      border: 2px solid #e0d5c5;
+      border-radius: 8px;
+      padding: 0.7rem 1rem;
+      text-align: left;
+      font-family: 'Georgia', serif;
+      font-size: 0.93rem;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+      line-height: 1.4;
+      color: #2c2c2c;
+    }
+    .option-btn:hover:not(:disabled) { background: #f0e6d6; border-color: #c8a882; }
+    .option-btn.correct { background: #e6f4ea; border-color: #34a853; color: #1a5c2e; }
+    .option-btn.incorrect { background: #fdecea; border-color: #ea4335; color: #7a1c14; }
+    .option-btn.reveal-correct { background: #e6f4ea; border-color: #34a853; color: #1a5c2e; }
+    .option-btn:disabled { cursor: default; }
+
+    .feedback {
+      margin-top: 1.1rem;
+      padding: 0.9rem 1.1rem;
+      border-radius: 8px;
+      font-size: 0.87rem;
+      line-height: 1.7;
+      display: none;
+    }
+    .feedback.show { display: block; animation: fadeIn 0.3s ease; }
+    .feedback.correct-fb { background: #e6f4ea; border-left: 4px solid #34a853; color: #1a5c2e; }
+    .feedback.incorrect-fb { background: #fdecea; border-left: 4px solid #ea4335; color: #7a1c14; }
+    .feedback .seance-ref {
+      margin-top: 0.6rem;
+      font-size: 0.8rem;
+      color: inherit;
+      opacity: 0.85;
+      font-style: italic;
+    }
+
+    .nav { margin-top: 1.4rem; display: flex; justify-content: flex-end; }
+    .btn-next {
+      background: #8b5e3c; color: #fff; border: none;
+      padding: 0.65rem 1.8rem; border-radius: 8px;
+      font-size: 0.95rem; font-family: 'Georgia', serif;
+      cursor: pointer; transition: background 0.2s; display: none;
+    }
+    .btn-next:hover { background: #6e4a2e; }
+
+    /* Score screen */
+    #score-screen {
+      display: none;
+      background: #fff; border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.09);
+      padding: 2.5rem; max-width: 660px; width: 100%;
+      text-align: center; animation: fadeIn 0.4s ease;
+    }
+    #score-screen h2 { font-size: 1.4rem; color: #3b2a1a; margin-bottom: 1.2rem; }
+    .score-circle {
+      width: 120px; height: 120px; border-radius: 50%;
+      background: #f0e6d6; border: 5px solid #8b5e3c;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1.3rem auto;
+      font-size: 2rem; font-weight: bold; color: #8b5e3c;
+    }
+    .score-label { font-size: 1rem; color: #7a6a55; margin-bottom: 1.2rem; }
+    .score-comment {
+      background: #f5f0e8; border-left: 4px solid #8b5e3c;
+      padding: 1rem 1.2rem; border-radius: 8px;
+      font-size: 0.92rem; line-height: 1.7;
+      text-align: left; color: #3b2a1a; margin-bottom: 1.4rem;
+    }
+    .revision-list {
+      text-align: left; background: #fff8f0;
+      border: 1px solid #e8d8c4; border-radius: 8px;
+      padding: 1rem 1.2rem; font-size: 0.87rem; line-height: 1.8;
+      color: #4a3828; margin-bottom: 1.4rem; display: none;
+    }
+    .revision-list h3 { font-size: 0.9rem; color: #8b5e3c; margin-bottom: 0.6rem; }
+    .revision-item { margin-bottom: 1rem; line-height: 1.6; }
+    .btn-restart {
+      background: #8b5e3c; color: #fff; border: none;
+      padding: 0.7rem 2rem; border-radius: 8px;
+      font-size: 1rem; font-family: 'Georgia', serif;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .btn-restart:hover { background: #6e4a2e; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>QCM – Histoire de la philosophie moderne</h1>
+  <p>Questions fondées sur les citations du cours &nbsp;|&nbsp; Licence de psychologie – 1re année</p>
+</header>
+
+<div class="progress-wrap" id="progress-wrap">
+  <div class="progress-info">
+    <span id="progress-label">Question 1 / 20</span>
+    <span id="score-live">Score : 0</span>
+  </div>
+  <div class="progress-bar-bg">
+    <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
+  </div>
+</div>
+
+<div class="card" id="question-card">
+  <div class="question-text" id="question-text"></div>
+  <div class="theme-tag" id="theme-tag"></div>
+  <div class="options" id="options"></div>
+  <div class="feedback" id="feedback"></div>
+  <div class="nav">
+    <button class="btn-next" id="btn-next" onclick="nextQuestion()">Question suivante →</button>
+  </div>
+</div>
+
+<div id="score-screen">
+  <h2>Résultat final</h2>
+  <div class="score-circle" id="score-circle"></div>
+  <div class="score-label" id="score-label"></div>
+  <div class="score-comment" id="score-comment"></div>
+  <div class="revision-list" id="revision-list">
+    <h3>📚 Séances à réviser :</h3>
+    <div id="revision-content"></div>
+  </div>
+  <button class="btn-restart" onclick="restartQuiz()">🔄 Recommencer</button>
+</div>
+
+<script>
+const questions = [
+  // ── SÉANCE 1 ──────────────────────────────────────────────────────────────
+  {
+    seance: "Séance 1 – Principes de l'Histoire de la Philosophie",
+    theme: "Séance 1",
+    citation: {
+      ref: "Ferdinand Alquié, Qu'est-ce que comprendre un philosophe [1956], Paris, La Table Ronde, 2005, p. 14.",
+      text: "« La compréhension des sciences, et des vérités de la science, n'est pas la compréhension des savants qui ont découvert ces vérités, et c'est pourquoi l'histoire des sciences n'est pas nécessaire à la science. […] Au contraire, pour comprendre la philosophie de Descartes ou la philosophie de Kant, il faut incontestablement comprendre Descartes et comprendre Kant. »"
+    },
+    question: "Selon Alquié, pourquoi l'histoire de la philosophie est-elle indispensable à la compréhension d'un philosophe, contrairement à l'histoire des sciences ?",
+    options: [
+      "Parce que les vérités philosophiques sont plus complexes que les vérités scientifiques",
+      "Parce que la vérité philosophique est inséparable de la personne du philosophe qui l'a découverte",
+      "Parce que la philosophie ne produit aucune vérité universelle",
+      "Parce que les philosophes écrivent dans un style littéraire difficile à comprendre"
+    ],
+    answer: 1,
+    explanation: "Alquié affirme que, contrairement à la science dont on peut comprendre les vérités sans connaître leurs découvreurs, comprendre Descartes ou Kant exige de comprendre Descartes et Kant eux-mêmes : la vérité philosophique est indissociable de celui qui la pense."
+  },
+
+  // ── SÉANCE 2 ──────────────────────────────────────────────────────────────
+  {
+    seance: "Séance 2 – La vie de Descartes",
+    theme: "Séance 2",
+    citation: {
+      ref: "Descartes, « Lettre à la princesse Élisabeth », 28 juin 1643, AT III 692, Œuvres complètes, t. VIII : Correspondance, vol. 2, Paris, Gallimard, 2013, p. 181.",
+      text: "« Je puis dire, avec vérité, que la principale règle que j'ai toujours observée en mes études, et celle que je crois m'avoir le plus servi pour acquérir quelque connaissance, a été que je n'ai jamais employé que fort peu d'heures, par jour, aux pensées qui occupent l'imagination, et fort peu d'heures, par an, à celles qui occupent l'entendement seul, et que j'ai donné tout le reste de mon temps au relâche des sens et au repos de l'esprit. »"
+    },
+    question: "Dans cette lettre à Élisabeth, quelle est selon Descartes la principale règle qui lui a permis d'acquérir de la connaissance ?",
+    options: [
+      "Travailler intensément chaque jour sans relâche pour développer l'entendement",
+      "Consacrer la majorité de son temps au repos des sens et de l'esprit, n'employant que peu de temps aux pensées abstraites",
+      "Alterner entre la lecture des anciens et l'expérimentation scientifique",
+      "Se retirer du monde pour se consacrer exclusivement à la méditation philosophique"
+    ],
+    answer: 1,
+    explanation: "Descartes indique qu'il n'a consacré que fort peu d'heures par jour aux pensées qui occupent l'imagination et fort peu d'heures par an à celles de l'entendement, donnant le reste au relâche des sens et au repos de l'esprit."
+  },
+
+  // ── SÉANCE 3 ──────────────────────────────────────────────────────────────
+  {
+    seance: "Séance 3 – Principes cartésiens",
+    theme: "Séance 3",
+    citation: {
+      ref: "Descartes, Discours de la méthode (1637), VI, Paris, Vrin, 2005, p. 127.",
+      text: "« Au lieu de cette philosophie spéculative, qu'on enseigne dans les écoles, on en peut trouver une pratique, par laquelle, connaissant la force et les actions du feu, de l'eau, de l'air, des astres, des cieux et de tous les autres corps qui nous environnent […] nous les pourrions employer en même façon à tous les usages auxquels ils sont propres, et ainsi nous rendre comme maîtres et possesseurs de la nature. »"
+    },
+    question: "Quel est le but pratique que Descartes assigne à la nouvelle philosophie dans cet extrait du Discours de la méthode ?",
+    options: [
+      "Comprendre l'ordre divin du cosmos pour mieux contempler Dieu",
+      "Remplacer la philosophie scolastique par une connaissance qui rende l'homme maître et possesseur de la nature",
+      "Fonder une morale universelle indépendante des coutumes",
+      "Démontrer l'immortalité de l'âme par des arguments rationnels"
+    ],
+    answer: 1,
+    explanation: "Descartes oppose à la philosophie spéculative scolaire une philosophie pratique qui, par la connaissance des forces de la nature, permettrait à l'homme d'en devenir « comme maître et possesseur ». La médecine est citée comme l'application principale."
+  },
+
+  // ── SÉANCE 4 ──────────────────────────────────────────────────────────────
+  {
+    seance: "Séance 4 – Sens trompeurs, Malin-Génie et Cogito",
+    theme: "Séance 4",
+    citation: {
+      ref: "Descartes, Méditations métaphysiques, I, Paris, GF-Flammarion, 2005, p. 59-69.",
+      text: "« Tout ce que j'ai reçu jusqu'à présent pour le plus vrai et assuré, je l'ai appris des sens, ou par les sens : or j'ai quelquefois éprouvé que ces sens étaient trompeurs, et il est de la prudence de ne se fier jamais entièrement à ceux qui nous ont une fois trompés. »"
+    },
+    question: "Au début de la Première Méditation, quel premier motif de doute Descartes invoque-t-il pour remettre en question ses connaissances ?",
+    options: [
+      "L'existence possible d'un Dieu tout-puissant qui pourrait nous tromper",
+      "L'impossibilité de distinguer la veille du sommeil",
+      "Le fait que les sens nous ont parfois trompés et méritent donc de ne plus être entièrement fiés",
+      "La possibilité que les vérités mathématiques soient fausses"
+    ],
+    answer: 2,
+    explanation: "Le premier motif de doute cartésien est que nos connaissances viennent des sens, lesquels nous ont parfois trompés. La prudence exige de ne plus se fier entièrement à ce qui nous a une seule fois trompés."
+  },
+
+  // ── SÉANCE 4 bis ──────────────────────────────────────────────────────────
+  {
+    seance: "Séance 4 – Sens trompeurs, Malin-Génie et Cogito",
+    theme: "Séance 4",
+    citation: {
+      ref: "Descartes, « Lettre à Mersenne », 28 janvier 1641, Œuvres complètes, t. VIII : Correspondance, vol. 1, Paris, Gallimard, 2013, p. 449.",
+      text: "« Je vous dirai, entre nous, que ces six Méditations, contiennent tous les fondements de ma physique. Mais il ne le faut pas dire, s'il vous plaît ; car ceux qui favorisent Aristote feraient peut-être plus de difficulté de les approuver ; et j'espère que ceux qui les liront s'accoutumeront insensiblement à mes principes, et en reconnaîtront la valeur avant que de s'apercevoir qu'ils détruisent ceux d'Aristote. »"
+    },
+    question: "Dans cette lettre confidentielle à Mersenne, que révèle Descartes sur la véritable portée des Méditations métaphysiques ?",
+    options: [
+      "Que les Méditations sont principalement un traité de théologie destiné à convertir les athées",
+      "Que les Méditations contiennent en réalité tous les fondements de sa physique, ce qu'il souhaite dissimuler",
+      "Que les Méditations visent à réconcilier la philosophie aristotélicienne avec la foi chrétienne",
+      "Que les Méditations sont un exercice rhétorique sans véritables implications scientifiques"
+    ],
+    answer: 1,
+    explanation: "Descartes confie à Mersenne que les Méditations contiennent « tous les fondements de sa physique », mais qu'il ne faut pas le dire pour ne pas alerter les partisans d'Aristote avant qu'ils ne soient déjà convaincus."
+  },
+
+  // ── SÉANCE 5 ──────────────────────────────────────────────────────────────
+  {
+    seance: "Séance 5 – Distinction des Idées, Existence de Dieu",
+    theme: "Séance 5",
+    citation: {
+      ref: "Descartes, Méditations métaphysiques, III, Paris, GF-Flammarion, 2005, p. 97.",
+      text: "« Et certes, puisque je n'ai aucune raison de croire qu'il y ait quelque Dieu qui soit trompeur, et même que je n'aie pas encore considéré celles qui prouvent qu'il y a un Dieu, la raison de douter qui dépend seulement de cette opinion est bien légère, et pour ainsi dire métaphysique. Mais afin de la pouvoir tout à fait ôter, je dois examiner s'il y a un Dieu, sitôt que l'occasion s'en présentera ; et si je trouve qu'il y en ait un, je dois aussi examiner s'il peut être trompeur : car sans la connaissance de ces deux vérités, je ne vois pas que je puisse jamais être certain d'aucune chose. »"
+    },
+    question: "Selon cet extrait de la Troisième Méditation, pourquoi Descartes juge-t-il indispensable de prouver l'existence de Dieu et sa non-tromperie ?",
+    options: [
+      "Pour satisfaire aux exigences de la théologie de son époque",
+      "Parce que sans ces deux vérités, il ne peut jamais être certain d'aucune chose",
+      "Pour réfuter l'hypothèse du malin génie qu'il a lui-même inventée",
+      "Pour démontrer que les mathématiques ont une réalité objective"
+    ],
+    answer: 1,
+    explanation: "Descartes affirme explicitement que sans savoir si Dieu existe et s'il peut être trompeur, il ne peut jamais être certain de quoi que ce soit. La preuve de Dieu est donc la condition de possibilité de toute certitude."
+  },
+
+  // ── SÉANCE 6 ──────────────────────────────────────────────────────────────
+  {
+    seance: "Séance 6 – Corps",
+    theme: "Séance 6",
+    citation: {
+      ref: "Descartes, Principes de la philosophie (1644), I, art. 53, Paris, Vrin, 2009, p. 79.",
+      text: "« L'étendue en longueur, largeur et profondeur, constitue la nature de la substance corporelle. […] Car tout ce que d'ailleurs on peut attribuer au corps, présuppose de l'étendue et n'est qu'une dépendance de ce qui est étendu. »"
+    },
+    question: "Comment Descartes définit-il la nature de la substance corporelle dans les Principes de la philosophie ?",
+    options: [
+      "Par la pesanteur et la résistance au mouvement",
+      "Par l'étendue en longueur, largeur et profondeur, dont toutes les autres propriétés du corps dépendent",
+      "Par la capacité à recevoir des impressions sensibles",
+      "Par le mouvement local qui constitue la propriété première de toute matière"
+    ],
+    answer: 1,
+    explanation: "Pour Descartes, l'essence du corps est l'étendue (res extensa) : longueur, largeur et profondeur. Toutes les autres propriétés corporelles présupposent l'étendue et n'en sont que des dépendances."
+  },
+
+  // ── SÉANCE 6 bis ──────────────────────────────────────────────────────────
+  {
+    seance: "Séance 6 – Corps",
+    theme: "Séance 6",
+    citation: {
+      ref: "Descartes, Principes de la philosophie, IV, art. 203, éd. Adam-Tannery, vol. IX, Paris, Vrin, 1996, p. 321.",
+      text: "« Je ne reconnais aucune différence entre les machines que font les artisans et les divers corps que la nature seule compose, sinon que les effets des machines ne dépendent que de l'agencement de certains tuyaux, ou ressorts, ou autres instruments qui […] sont toujours si grands que leurs figures et mouvements se peuvent voir, au lieu que les tuyaux et ressorts qui causent les effets des corps naturels sont ordinairement trop petits pour être aperçus par les sens. »"
+    },
+    question: "Dans cet article des Principes, quelle est la thèse centrale de Descartes sur le rapport entre les corps naturels et les machines artificielles ?",
+    options: [
+      "Les corps naturels sont supérieurs aux machines car ils possèdent une âme",
+      "Il n'y a aucune différence de nature entre les corps naturels et les machines, sinon la taille de leurs mécanismes",
+      "Les machines imitent la nature sans jamais pouvoir l'égaler en complexité",
+      "La nature obéit à des lois divines, tandis que les machines obéissent à des lois humaines"
+    ],
+    answer: 1,
+    explanation: "Descartes soutient qu'il n'y a aucune différence de nature entre les corps naturels et les machines artificielles : les deux fonctionnent par agencement mécanique, seule la taille des pièces diffère (les corps naturels ont des mécanismes trop petits pour être vus)."
+  },
+
+  // ── SÉANCE 7 ──────────────────────────────────────────────────────────────
+  {
+    seance: "Séance 7 – Âme et Liberté",
+    theme: "Séance 7",
+    citation: {
+      ref: "Descartes, Méditations métaphysiques, VI, Paris, GF-Flammarion, 2005, p. 185.",
+      text: "« Il suffit que je puisse concevoir clairement et distinctement une chose sans une autre, pour être certain que l'une est distincte ou différente de l'autre. […] Parce que d'un côté j'ai une claire et distincte idée de moi-même, en tant que je suis seulement une chose qui pense et non étendue, et que d'un autre j'ai une idée distincte du corps, en tant qu'il est seulement une chose étendue et qui ne pense point, il est certain que moi […] c'est-à-dire mon âme […] est entièrement et véritablement distincte de mon corps, et qu'elle peut être ou exister sans lui. »"
+    },
+    question: "Sur quel principe Descartes fonde-t-il la distinction réelle entre l'âme et le corps dans la Sixième Méditation ?",
+    options: [
+      "Sur le fait que l'âme est immortelle tandis que le corps est mortel",
+      "Sur la possibilité de concevoir clairement et distinctement l'âme (chose pensante) sans le corps (chose étendue), et inversement",
+      "Sur l'autorité des Écritures qui affirment la distinction de l'âme et du corps",
+      "Sur l'expérience de la douleur qui montre que l'âme est affectée par le corps"
+    ],
+    answer: 1,
+    explanation: "Descartes applique le critère des idées claires et distinctes : je peux concevoir clairement mon âme comme chose pensante non étendue, et le corps comme chose étendue non pensante. Cette conception distincte de chacun sans l'autre suffit à prouver leur distinction réelle."
+  },
+
+  // ── SÉANCE 7 bis ──────────────────────────────────────────────────────────
+  {
+    seance: "Séance 7 – Âme et Liberté",
+    theme: "Séance 7",
+    citation: {
+      ref: "Descartes, Méditations métaphysiques, VI, op. cit., p. 191-193.",
+      text: "« La nature m'enseigne aussi par ces sentiments de douleur, de faim, de soif, etc., que je ne suis pas seulement logé dans mon corps, ainsi qu'un pilote en son navire, mais que, outre cela, je lui suis conjoint très étroitement et tellement confondu et mêlé, que je compose comme un seul tout avec lui. »"
+    },
+    question: "Par quelle image Descartes illustre-t-il ce que l'union de l'âme et du corps n'est PAS, dans la Sixième Méditation ?",
+    options: [
+      "Un musicien jouant de son instrument",
+      "Un capitaine commandant ses troupes",
+      "Un pilote dans son navire",
+      "Un artisan façonnant sa matière"
+    ],
+    answer: 2,
+    explanation: "Descartes affirme que la nature m'enseigne que je ne suis pas seulement logé dans mon corps « ainsi qu'un pilote en son navire » : l'union est bien plus intime, formant un seul tout. La métaphore du pilote représente donc ce que l'union âme-corps n'est pas."
+  },
+
+  // ── SÉANCE 8 ──────────────────────────────────────────────────────────────
+  {
+    seance: "Séance 8 – Morale et Bonheur",
+    theme: "Séance 8",
+    citation: {
+      ref: "Descartes, Discours de la méthode (1637), III, Paris, Vrin, 2005, p. 76-80.",
+      text: "« Ma troisième maxime était de tâcher toujours plutôt à me vaincre que la fortune, et à changer mes désirs que l'ordre du monde ; et généralement, de m'accoutumer à croire qu'il n'y a rien qui soit entièrement en notre pouvoir, que nos pensées, en sorte qu'après que nous avons fait notre mieux, touchant les choses qui nous sont extérieures, tout ce qui manque de nous réussir est, au regard de nous, absolument impossible. »"
+    },
+    question: "Quelle est la troisième maxime de la morale par provision de Descartes, dans le Discours de la méthode ?",
+    options: [
+      "Obéir aux lois et coutumes de son pays en attendant de trouver des vérités meilleures",
+      "Être ferme et résolu dans ses actions, même lorsqu'on suit des opinions douteuses",
+      "Changer ses désirs plutôt que l'ordre du monde, et ne considérer comme entièrement en notre pouvoir que nos propres pensées",
+      "Se consacrer toute sa vie à l'étude de la vérité comme occupation principale"
+    ],
+    answer: 2,
+    explanation: "La troisième maxime cartésienne consiste à vaincre ses désirs plutôt que la fortune, à ne chercher à changer que soi-même, et à reconnaître que seules nos pensées sont entièrement en notre pouvoir — anticipant ainsi la distinction stoïcienne entre ce qui dépend et ce qui ne dépend pas de nous."
+  },
+
+  // ── SÉANCE 9 ──────────────────────────────────────────────────────────────
+  {
+    seance: "Séance 9 – Vertu",
+    theme: "Séance 9",
+    citation: {
+      ref: "Descartes, Les Passions de l'âme (1649), I, art. 17, Paris, Flammarion, 1996, p. 111.",
+      text: "« Il ne reste rien en nous que nous devions attribuer à notre âme, sinon nos pensées, lesquelles sont principalement de deux genres, à savoir les unes sont les actions de l'âme, les autres sont ses passions. Celles que je nomme ses actions sont toutes nos volontés, à cause que nous expérimentons qu'elles viennent directement de notre âme. […] Comme, au contraire, on peut généralement nommer ses passions toutes sortes de perceptions ou connaissances qui se trouvent en nous. »"
+    },
+    question: "Selon l'article 17 des Passions de l'âme, comment Descartes distingue-t-il les actions des passions de l'âme ?",
+    options: [
+      "Les actions sont les mouvements du corps, les passions sont les pensées de l'âme",
+      "Les actions sont les volontés qui viennent directement de l'âme, les passions sont les perceptions qui nous arrivent",
+      "Les actions sont conscientes, les passions sont inconscientes",
+      "Les actions sont moralement bonnes, les passions sont moralement mauvaises"
+    ],
+    answer: 1,
+    explanation: "Descartes nomme « actions » de l'âme toutes nos volontés (elles viennent directement de l'âme), et « passions » toutes les perceptions ou connaissances que nous recevons — car l'âme les reçoit passivement des choses représentées."
+  },
+
+  // ── SÉANCE 9 bis ──────────────────────────────────────────────────────────
+  {
+    seance: "Séance 9 – Vertu",
+    theme: "Séance 9",
+    citation: {
+      ref: "Descartes, Les Passions de l'âme, II, art. 49-80, op. cit., p. 147-148.",
+      text: "« L'amour est une émotion de l'âme causée par le mouvement des esprits, qui l'incite à se joindre de volonté aux objets qui paraissent lui être convenables. Et la haine est une émotion causée par les esprits, qui incite l'âme à vouloir être séparée des objets qui se présentent à elle comme nuisibles. »"
+    },
+    question: "Comment Descartes définit-il l'amour et la haine dans les Passions de l'âme ?",
+    options: [
+      "L'amour est un jugement de l'entendement, la haine est une décision de la volonté",
+      "L'amour est une émotion causée par les esprits qui incite à s'unir à ce qui paraît convenable ; la haine incite à fuir ce qui paraît nuisible",
+      "L'amour et la haine sont deux formes de la même passion, selon que l'objet est présent ou absent",
+      "L'amour est une passion de l'âme pure ; la haine est une passion du corps"
+    ],
+    answer: 1,
+    explanation: "Pour Descartes, l'amour est une émotion causée par le mouvement des esprits animaux incitant l'âme à se joindre à ce qui lui paraît convenable, tandis que la haine incite à s'en séparer en tant qu'objet nuisible."
+  },
+
+  // ── SÉANCE 10 ──────────────────────────────────────────────────────────────
+  {
+    seance: "Séance 10 – Vertu, Pensée et Mémoire",
+    theme: "Séance 10",
+    citation: {
+      ref: "Descartes, « Lettre à la princesse Élisabeth », 4 août 1645, Œuvres complètes, t. VIII : Correspondance, vol. 2, Paris, Gallimard, 2013, p. 211.",
+      text: "« Au reste, toute sorte de désirs ne sont pas incompatibles avec la béatitude ; il n'y a que ceux qui sont accompagnés d'impatience et de tristesse. Il n'est pas nécessaire aussi que notre raison se trompe point ; il suffit que notre conscience nous témoigne que nous n'avons jamais manqué de résolution et de vertu, pour exécuter toutes les choses que nous avons jugé être les meilleures, et ainsi la vertu seule est suffisante pour nous rendre contents en cette vie. »"
+    },
+    question: "Selon la lettre à Élisabeth du 4 août 1645, quelle condition Descartes pose-t-il pour atteindre la béatitude (le contentement) en cette vie ?",
+    options: [
+      "Posséder la santé du corps et les biens extérieurs nécessaires au bien-vivre",
+      "Ne jamais se tromper dans ses jugements grâce à l'usage correct de la raison",
+      "Que la conscience témoigne qu'on n'a jamais manqué de résolution et de vertu : la vertu seule suffit au contentement",
+      "Se soumettre aux plaisirs modérés compatibles avec la tranquillité de l'âme"
+    ],
+    answer: 2,
+    explanation: "Descartes affirme qu'il suffit que notre conscience témoigne que nous n'avons jamais manqué de résolution et de vertu dans nos actions : « la vertu seule est suffisante pour nous rendre contents en cette vie », indépendamment des erreurs possibles de la raison."
+  },
+
+  // ── SÉANCE 10 bis ──────────────────────────────────────────────────────────
+  {
+    seance: "Séance 10 – Vertu, Pensée et Mémoire",
+    theme: "Séance 10",
+    citation: {
+      ref: "Descartes, Méditations métaphysiques (1641), II, Paris, Flammarion, 2005, p. 73.",
+      text: "« De sorte qu'après y avoir bien pensé, et avoir soigneusement examiné toutes choses, enfin il faut conclure et tenir pour constant que cette proposition : Je suis, j'existe, est nécessairement vraie, toutes les fois que je la prononce ou que je la conçois en mon esprit. »"
+    },
+    question: "Comment Descartes formule-t-il le Cogito dans la Deuxième Méditation, telle que citée en séance 10 ?",
+    options: [
+      "« Je pense, donc je suis » — une inférence logique tirée de la pensée",
+      "« Je suis, j'existe » — une proposition nécessairement vraie chaque fois qu'elle est prononcée ou conçue",
+      "« Il y a une chose pensante » — une vérité objective indépendante du sujet",
+      "« Mon existence est certaine parce que Dieu m'a créé » — une vérité fondée sur la foi"
+    ],
+    answer: 1,
+    explanation: "Dans la Deuxième Méditation, Descartes formule le Cogito non comme syllogisme mais comme proposition intuitive : « Je suis, j'existe » est nécessairement vraie toutes les fois qu'elle est prononcée ou conçue, c'est-à-dire à chaque acte de pensée."
+  },
+
+  // ── SÉANCE 11 ──────────────────────────────────────────────────────────────
+  {
+    seance: "Séance 11 – Malebranche",
+    theme: "Séance 11",
+    citation: {
+      ref: "Nicolas Malebranche, De la Recherche de la vérité, Livre I, Chapitre 1, § 1, éd. Bardout, Paris, Vrin, 2006, p. 123-124.",
+      text: "« L'erreur est la cause de la misère des hommes ; c'est le mauvais principe qui a produit le mal dans le monde ; c'est elle qui fait naître et entretient dans notre âme tous les maux qui nous affligent, et nous ne devons point espérer de bonheur solide et véritable, qu'en travaillant sérieusement à l'éviter. »"
+    },
+    question: "Selon l'ouverture de la Recherche de la vérité, quel est pour Malebranche le principe premier de la misère humaine ?",
+    options: [
+      "Le péché originel qui a corrompu la volonté humaine",
+      "L'erreur, qui est le mauvais principe ayant produit le mal dans le monde",
+      "Les passions du corps qui troublent la raison",
+      "L'ignorance de Dieu qui empêche l'accès à la vraie philosophie"
+    ],
+    answer: 1,
+    explanation: "Malebranche ouvre la Recherche de la vérité en posant que l'erreur est la cause de la misère des hommes et le mauvais principe ayant produit le mal dans le monde. C'est pourquoi il faut travailler sérieusement à l'éviter pour trouver le bonheur."
+  },
+
+  // ── SÉANCE 11 bis ──────────────────────────────────────────────────────────
+  {
+    seance: "Séance 11 – Malebranche",
+    theme: "Séance 11",
+    citation: {
+      ref: "Malebranche, De la Recherche de la vérité, Livre III, Première partie, Chapitre 4, § 5, op. cit., p. 432.",
+      text: "« M. Descartes était homme comme les autres, sujet à l'erreur comme les autres. […] Il ne faut donc point le croire sur sa parole, mais le lire comme il nous en avertit lui-même avec précaution, en examinant s'il ne s'est point trompé, et ne croyant rien de ce qu'il dit, que ce que l'évidence et les reproches secrets de notre raison nous obligeront de croire. »"
+    },
+    question: "Quelle attitude Malebranche recommande-t-il d'adopter à l'égard de Descartes dans la Recherche de la vérité ?",
+    options: [
+      "Le suivre fidèlement car il est le fondateur de la vraie philosophie",
+      "Le lire avec précaution et ne croire que ce que l'évidence de notre propre raison nous oblige à croire",
+      "Le rejeter entièrement car il est sujet à l'erreur comme tous les hommes",
+      "Le lire uniquement à la lumière des Saintes Écritures pour corriger ses erreurs"
+    ],
+    answer: 1,
+    explanation: "Malebranche adopte une attitude critique envers Descartes : bien qu'il s'en inspire largement, il affirme qu'il ne faut pas le croire sur parole, mais l'examiner avec précaution et ne croire que ce que l'évidence et la raison nous obligent à croire."
+  },
+
+  // ── SÉANCE 12 ──────────────────────────────────────────────────────────────
+  {
+    seance: "Séance 12 – Spinoza, Physique",
+    theme: "Séance 12",
+    citation: {
+      ref: "Spinoza, Éthique démontrée suivant l'ordre géométrique, Première partie, Définition 3 et Proposition 5, dans Œuvres III, Paris, Flammarion, 2009, p. 21-49.",
+      text: "Définition 3 : « J'entends par substance ce qui est en soi et est conçu par soi : c'est-à-dire ce dont le concept n'a pas besoin du concept d'une autre chose, duquel il doive être formé. » — Proposition 5 : « Il ne peut y avoir dans la nature deux ou plusieurs substances de même nature ou attribut. »"
+    },
+    question: "Que dit la Proposition 5 de la Première partie de l'Éthique de Spinoza, qui découle directement de sa définition de la substance ?",
+    options: [
+      "Qu'il existe deux substances fondamentales : la pensée et l'étendue",
+      "Qu'il ne peut y avoir deux substances partageant un même attribut, ce qui conduit à l'unicité de la substance",
+      "Que toute substance est nécessairement infinie et éternelle",
+      "Que la substance ne peut être connue que par intuition, non par raison"
+    ],
+    answer: 1,
+    explanation: "La Proposition 5 de l'Éthique affirme qu'il ne peut y avoir deux substances de même nature ou attribut. Couplée à la définition de la substance comme ce qui est conçu par soi, cela conduit Spinoza à démontrer qu'il n'existe qu'une seule substance : Dieu ou la Nature."
+  },
+
+  // ── SÉANCE 14 ──────────────────────────────────────────────────────────────
+  {
+    seance: "Séance 14 – Leibniz",
+    theme: "Séance 14",
+    citation: {
+      ref: "G. W. Leibniz, Monadologie [1714], § 1-3, dans Principes de la nature et de la grâce. Monadologie et autres textes, Paris, Flammarion, 2013, p. 243-245.",
+      text: "« 1. La monade, dont nous parlerons ici, n'est autre chose qu'une substance simple, qui entre dans les composés ; simple, c'est-à-dire sans parties. […] 3. Or là, où il n'y a point de parties, il n'y a ni étendue, ni figure, ni divisibilité possible. Et ces monades sont les véritables atomes de la nature, et en un mot les éléments des choses. »"
+    },
+    question: "Selon les premiers paragraphes de la Monadologie, pourquoi les monades ne peuvent-elles pas avoir d'étendue, de figure ni de divisibilité ?",
+    options: [
+      "Parce qu'elles sont de nature spirituelle et n'appartiennent pas au monde physique",
+      "Parce qu'elles sont des substances simples sans parties, et l'étendue, la figure et la divisibilité présupposent des parties",
+      "Parce qu'elles existent hors de l'espace et du temps créés par Dieu",
+      "Parce qu'elles sont des idées dans l'entendement divin et non des réalités physiques"
+    ],
+    answer: 1,
+    explanation: "Leibniz définit les monades comme des substances simples, c'est-à-dire sans parties. Or l'étendue, la figure et la divisibilité présupposent l'existence de parties. Les monades étant sans parties, elles ne peuvent avoir ni étendue ni figure : elles sont les « véritables atomes de la nature »."
+  },
+
+  // ── SÉANCE 14 bis ──────────────────────────────────────────────────────────
+  {
+    seance: "Séance 14 – Leibniz",
+    theme: "Séance 14",
+    citation: {
+      ref: "Leibniz, « Réponse aux réflexions touchant les conséquences de quelques endroits de la philosophie de Descartes » [1697], dans Système nouveau de la nature et autres textes (1690-1703), Paris, Flammarion, 2000, p. 112.",
+      text: "« J'ai coutume de dire que la philosophie cartésienne est l'antichambre de la vérité, et qu'il est difficile de pénétrer bien avant sans avoir passé par là : mais on se prive de la véritable connaissance du fonds des choses quand on s'y arrête. »"
+    },
+    question: "Par quelle formule Leibniz qualifie-t-il la philosophie cartésienne, et quelle en est la limite selon lui ?",
+    options: [
+      "C'est la « science des sciences », mais elle ignore la dimension morale de la philosophie",
+      "C'est l'« antichambre de la vérité » : nécessaire pour s'y initier, mais insuffisante pour atteindre la vraie connaissance du fond des choses",
+      "C'est une « philosophie de la nature » réussie, mais incapable de rendre compte de l'âme",
+      "C'est le « premier degré de la sagesse », mais elle s'arrête à la physique sans atteindre la métaphysique"
+    ],
+    answer: 1,
+    explanation: "Leibniz reconnaît la valeur propédeutique de la philosophie cartésienne (« l'antichambre de la vérité »), mais critique son insuffisance : celui qui s'y arrête se prive de la véritable connaissance du fond des choses, que seule la philosophie des formes substantielles et des monades peut atteindre."
+  }
+];
+
+let current = 0;
+let score = 0;
+let wrongSeances = {};
+let shuffledQ;
+
+function shuffleArr(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// Per-séance revision tips
+const revisionTips = {
+  "Séance 1 – Principes de l'Histoire de la Philosophie": "Revoir la distinction d'Alquié entre compréhension des sciences et compréhension de la philosophie : pourquoi la vérité philosophique est-elle inséparable de la personne du philosophe ?",
+  "Séance 2 – La vie de Descartes": "Revoir les lettres de Descartes (à Beeckman, Mersenne, Élisabeth) : sa méthode de travail, sa devise <em>bene vixit bene qui latuit</em>, et sa règle de ménager le repos de l'esprit.",
+  "Séance 3 – Principes cartésiens": "Revoir la métaphore de l'arbre dans la Lettre-Préface des <em>Principes</em> (racines = métaphysique, tronc = physique, branches = médecine/mécanique/morale) et le projet de philosophie pratique du <em>Discours</em> VI.",
+  "Séance 4 – Sens trompeurs, Malin-Génie et Cogito": "Revoir les trois étapes du doute dans la 1re Méditation (sens trompeurs, rêve, malin génie), et la confidence de la lettre à Mersenne sur les fondements physiques des <em>Méditations</em>.",
+  "Séance 5 – Distinction des Idées, Existence de Dieu": "Revoir le tableau des pensées (idées innées / adventices / factices ; désirs ; jugements) et la preuve de l'existence de Dieu par l'idée d'infini dans la 3e Méditation.",
+  "Séance 6 – Corps": "Revoir la définition du corps comme <em>res extensa</em> (étendue en longueur, largeur, profondeur), l'unicité de la matière (<em>Principes</em> II, art. 23) et la thèse mécaniste sur les corps naturels comme machines.",
+  "Séance 7 – Âme et Liberté": "Revoir la preuve de la distinction réelle âme/corps (6e Méditation) par les idées claires et distinctes, et la métaphore du pilote pour illustrer ce que l'union n'est <em>pas</em>.",
+  "Séance 8 – Morale et Bonheur": "Revoir les trois maximes de la morale par provision dans le <em>Discours</em> III : obéir aux lois, être ferme dans ses actions, vaincre ses désirs plutôt que l'ordre du monde.",
+  "Séance 9 – Vertu": "Revoir la distinction actions/passions de l'âme (<em>Passions</em>, art. 17), la définition de l'amour et la haine (art. 49-80), et l'idée que l'âme éprouve de la joie dès son union avec le corps.",
+  "Séance 10 – Vertu, Pensée et Mémoire": "Revoir la formulation du Cogito dans la 2e Méditation (<em>Je suis, j'existe</em>) et la lettre à Élisabeth (4 août 1645) : la vertu seule suffit au contentement, indépendamment des erreurs de la raison.",
+  "Séance 11 – Malebranche": "Revoir l'ouverture de la <em>Recherche de la vérité</em> (l'erreur comme cause de la misère), la position critique envers Descartes (ne pas le croire sur parole), et la définition du corps comme étendue pure.",
+  "Séance 12 – Spinoza, Physique": "Revoir les définitions et propositions de la Partie I de l'<em>Éthique</em> : substance (conçue par soi), attribut, mode, Dieu comme substance infinie, et la Proposition 5 sur l'unicité de la substance.",
+  "Séance 14 – Leibniz": "Revoir la <em>Monadologie</em> §1-6 (substance simple, sans parties, sans étendue ni figure) et la formule de la philosophie cartésienne comme « antichambre de la vérité » insuffisante pour connaître le fond des choses."
+};
+
+// Shuffle options of a question, optionally forbidding a specific answer position
+function shuffleOptions(q, forbiddenAnswer) {
+  let indices, newAnswer;
+  let attempts = 0;
+  do {
+    indices = [0, 1, 2, 3];
+    for (let i = indices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [indices[i], indices[j]] = [indices[j], indices[i]];
+    }
+    newAnswer = indices.indexOf(q.answer);
+    attempts++;
+  } while (newAnswer === forbiddenAnswer && attempts < 20);
+  const newOptions = indices.map(i => q.options[i]);
+  return { ...q, options: newOptions, answer: newAnswer };
+}
+
+function initQuiz() {
+  // Shuffle question order, then randomize option positions with no-more-than-2-in-a-row constraint
+  const baseQ = shuffleArr([...questions]);
+  shuffledQ = [];
+  let lastAnswer = -1;
+  let streak = 0;
+  for (const q of baseQ) {
+    const forbidden = (streak >= 2) ? lastAnswer : -1;
+    const sq = shuffleOptions(q, forbidden);
+    if (sq.answer === lastAnswer) {
+      streak++;
+    } else {
+      streak = 1;
+    }
+    lastAnswer = sq.answer;
+    shuffledQ.push(sq);
+  }
+  current = 0; score = 0; wrongSeances = {};
+  document.getElementById('score-screen').style.display = 'none';
+  document.getElementById('question-card').style.display = 'block';
+  document.getElementById('progress-wrap').style.display = 'block';
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = shuffledQ[current];
+  const seanceNum = q.seance.match(/Séance\s+(\d+)/i)?.[1] || '';
+  document.getElementById('theme-tag').textContent = 'Indice : Séance ' + seanceNum;
+
+  document.getElementById('question-text').innerHTML = (current + 1) + '. ' + q.question;
+  document.getElementById('progress-label').textContent = 'Question ' + (current + 1) + ' / ' + shuffledQ.length;
+  document.getElementById('score-live').textContent = 'Score : ' + score;
+  document.getElementById('progress-bar').style.width = (current / shuffledQ.length * 100) + '%';
+
+  const optDiv = document.getElementById('options');
+  optDiv.innerHTML = '';
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.innerHTML = '<strong>' + String.fromCharCode(65 + i) + '.</strong> ' + opt;
+    btn.onclick = () => selectAnswer(i, btn);
+    optDiv.appendChild(btn);
+  });
+
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback';
+  fb.innerHTML = '';
+  document.getElementById('btn-next').style.display = 'none';
+}
+
+function selectAnswer(chosen, btn) {
+  const q = shuffledQ[current];
+  const allBtns = document.querySelectorAll('.option-btn');
+  allBtns.forEach(b => b.disabled = true);
+
+  const fb = document.getElementById('feedback');
+  const isLast = current === shuffledQ.length - 1;
+  document.getElementById('btn-next').textContent = isLast ? 'Voir mon résultat →' : 'Question suivante →';
+  document.getElementById('btn-next').style.display = 'inline-block';
+
+  let citationHTML = '';
+  if (q.citation) {
+    citationHTML = `<div class="citation-block">
+      <div class="citation-label">📜 Texte source — ${q.seance}</div>
+      <div class="citation-ref">${q.citation.ref}</div>
+      <div class="citation-text">${q.citation.text}</div>
+    </div>`;
+  }
+
+  if (chosen === q.answer) {
+    btn.classList.add('correct');
+    score++;
+    document.getElementById('score-live').textContent = 'Score : ' + score;
+    fb.className = 'feedback correct-fb show';
+    fb.innerHTML = '✅ <strong>Bonne réponse !</strong> ' + q.explanation + citationHTML;
+  } else {
+    btn.classList.add('incorrect');
+    allBtns[q.answer].classList.add('reveal-correct');
+    fb.className = 'feedback incorrect-fb show';
+    fb.innerHTML = '❌ <strong>Mauvaise réponse.</strong> La bonne réponse était : <strong>' + String.fromCharCode(65 + q.answer) + '. ' + q.options[q.answer] + '</strong>.<br><br>' + q.explanation + citationHTML;
+    if (!wrongSeances[q.seance]) wrongSeances[q.seance] = { count: 0, questions: [] };
+    wrongSeances[q.seance].count++;
+    wrongSeances[q.seance].questions.push(q.question);
+  }
+}
+
+function nextQuestion() {
+  current++;
+  if (current >= shuffledQ.length) showScore();
+  else renderQuestion();
+}
+
+function showScore() {
+  document.getElementById('question-card').style.display = 'none';
+  document.getElementById('progress-wrap').style.display = 'none';
+
+  const total = shuffledQ.length;
+  const pct = score / total;
+  document.getElementById('score-circle').textContent = score + '/' + total;
+  document.getElementById('score-label').textContent = Math.round(pct * 100) + '% de bonnes réponses';
+
+  let comment = '';
+  if (pct >= 0.9) comment = '🏆 <strong>Excellent !</strong> Vous maîtrisez très bien les textes du cours. Bravo !';
+  else if (pct >= 0.75) comment = '👍 <strong>Très bien !</strong> Votre lecture des textes est solide. Quelques passages méritent encore attention.';
+  else if (pct >= 0.5) comment = '📖 <strong>Résultat passable.</strong> Vous avez les grandes lignes, mais certains textes nécessitent une relecture attentive.';
+  else comment = '⚠️ <strong>Des lacunes importantes.</strong> Il est conseillé de relire attentivement les textes des séances concernées avant l\'examen.';
+  document.getElementById('score-comment').innerHTML = comment;
+
+  const revDiv = document.getElementById('revision-list');
+  const revContent = document.getElementById('revision-content');
+  const wrongKeys = Object.keys(wrongSeances);
+
+  if (wrongKeys.length > 0) {
+    wrongKeys.sort((a, b) => {
+      const na = parseInt(a.match(/\d+/)?.[0] || '0');
+      const nb = parseInt(b.match(/\d+/)?.[0] || '0');
+      return na - nb;
+    });
+    let html = '';
+    for (const s of wrongKeys) {
+      const { count, questions: qs } = wrongSeances[s];
+      const tip = revisionTips[s] || 'Relisez attentivement les citations et leurs enjeux philosophiques.';
+      const qList = qs.map(q => `<li style="margin-left:1rem;margin-top:0.3rem;font-style:italic;opacity:0.85">${q}</li>`).join('');
+      html += `<div class="revision-item">
+        <strong>${s}</strong> — ${count} erreur${count > 1 ? 's' : ''}<br>
+        <span style="font-size:0.85rem">📌 ${tip}</span>
+        <ul style="list-style:disc;font-size:0.82rem;margin-top:0.3rem">${qList}</ul>
+      </div>`;
+    }
+    revContent.innerHTML = html;
+    revDiv.style.display = 'block';
+  } else {
+    revDiv.style.display = 'none';
+  }
+
+  document.getElementById('score-screen').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function restartQuiz() {
+  initQuiz();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+initQuiz();
+</script>
+</body>
+</html>
